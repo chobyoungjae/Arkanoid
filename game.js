@@ -27,9 +27,9 @@ class ArkanoidGame {
       x: this.canvas.width / 2,
       y: this.canvas.height - 50,
       radius: 8,
-      dx: 8,
-      dy: -8,
-      speed: 8,
+      dx: 6, // 75% 속도로 조정 (8 * 0.75 = 6)
+      dy: -6, // 75% 속도로 조정 (8 * 0.75 = 6)
+      speed: 6, // 75% 속도로 조정
     };
 
     this.balls = [this.ball];
@@ -238,8 +238,8 @@ class ArkanoidGame {
     this.paddle.x = this.canvas.width / 2 - 60;
     this.ball.x = this.canvas.width / 2;
     this.ball.y = this.canvas.height - 50;
-    this.ball.dx = 8;
-    this.ball.dy = -8;
+    this.ball.dx = 6;
+    this.ball.dy = -6;
     this.balls = [this.ball];
     this.items = [];
     this.paddle.width = this.paddleOriginalWidth;
@@ -547,19 +547,32 @@ class ArkanoidGame {
     }
 
     for (let item of this.items) {
+      // 아이템 배경 그리기 (더 큰 크기)
       this.ctx.fillStyle = this.getItemColor(item.type);
       this.ctx.fillRect(item.x, item.y, item.width, item.height);
+
+      // 테두리 그리기 (더 굵게)
       this.ctx.strokeStyle = "#fff";
-      this.ctx.lineWidth = 2;
+      this.ctx.lineWidth = 3;
       this.ctx.strokeRect(item.x, item.y, item.width, item.height);
 
+      // 아이템 텍스트 (더 크고 굵게)
       this.ctx.fillStyle = "#fff";
-      this.ctx.font = "10px Arial";
+      this.ctx.font = "bold 16px Arial"; // 폰트 크기 증가
       this.ctx.textAlign = "center";
       this.ctx.fillText(
         this.getItemText(item.type),
         item.x + item.width / 2,
-        item.y + item.height / 2 + 3
+        item.y + item.height / 2 + 5
+      );
+
+      // 아이템 설명 추가
+      this.ctx.font = "10px Arial";
+      this.ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+      this.ctx.fillText(
+        this.getItemDescription(item.type),
+        item.x + item.width / 2,
+        item.y + item.height + 15
       );
     }
 
@@ -609,6 +622,17 @@ class ArkanoidGame {
       smallPaddle: "P-",
     };
     return texts[type] || "?";
+  }
+
+  getItemDescription(type) {
+    const descriptions = {
+      bigBall: "더 큰 공으로 변경",
+      smallBall: "더 작은 공으로 변경",
+      multiBall: "공 2개 추가",
+      bigPaddle: "패들 크기 증가",
+      smallPaddle: "패들 크기 감소",
+    };
+    return descriptions[type] || "아이템 효과 없음";
   }
 
   updateUI() {

@@ -631,3 +631,4 @@ class ArkanoidGame {
 window.addEventListener("load", () => {
   new ArkanoidGame();
 });
+// 배포

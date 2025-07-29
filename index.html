@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>알카노이드 게임</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="score">점수: <span id="score">0</span></div>
+            <div class="lives">라이프: <span id="lives">3</span></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div class="game-controls">
+            <button id="startBtn">게임 시작</button>
+            <button id="pauseBtn">일시정지</button>
+            <button id="resetBtn">다시 시작</button>
+        </div>
+        
+        <div class="level-info">
+            <p>레벨: <span id="levelDisplay">1</span> | 아이템: B+(공↑), B-(공↓), X2(멀티볼), P+(패들↑), P-(패들↓)</p>
+        </div>
+        
+        <div class="mobile-controls">
+            <p>📱 터치로 패들을 조작하세요!</p>
+        </div>
+        
+        <div class="instructions">
+            <p>← → 화살표 키 또는 마우스/터치로 패들을 조작하세요!</p>
+            <p>모든 벽돌을 파괴하여 게임을 클리어하세요!</p>
+            <p>회색 벽돌(X표시)은 파괴되지 않는 장애물입니다!</p>
+        </div>
+        
+        <div id="gameOver" class="game-over hidden">
+            <h2>게임 오버!</h2>
+            <p>최종 점수: <span id="finalScore">0</span></p>
+            <button id="restartBtn">다시 시작</button>
+        </div>
+        
+        <div id="gameWin" class="game-win hidden">
+            <h2>축하합니다!</h2>
+            <p>모든 벽돌을 파괴했습니다!</p>
+            <p>최종 점수: <span id="winScore">0</span></p>
+            <button id="nextLevelBtn">다음 레벨</button>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>

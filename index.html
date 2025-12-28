@@ -41,18 +41,28 @@
 
     <!-- 게임 화면 -->
     <div id="game-screen" class="screen">
-        <!-- 체력바 -->
-        <div class="health-bars">
-            <div class="health-container player1">
+        <!-- 체력바 + MP바 -->
+        <div class="status-bars">
+            <div class="player-status player1">
                 <span class="player-label">P1</span>
-                <div class="health-bar">
-                    <div id="health-p1" class="health-fill"></div>
+                <div class="bars-wrapper">
+                    <div class="bar-container health-bar">
+                        <div id="health-p1" class="bar-fill health-fill"></div>
+                    </div>
+                    <div class="bar-container mp-bar">
+                        <div id="mp-p1" class="bar-fill mp-fill"></div>
+                    </div>
                 </div>
             </div>
-            <div class="health-container player2">
+            <div class="player-status player2">
                 <span class="player-label">P2</span>
-                <div class="health-bar">
-                    <div id="health-p2" class="health-fill"></div>
+                <div class="bars-wrapper">
+                    <div class="bar-container health-bar">
+                        <div id="health-p2" class="bar-fill health-fill"></div>
+                    </div>
+                    <div class="bar-container mp-bar">
+                        <div id="mp-p2" class="bar-fill mp-fill"></div>
+                    </div>
                 </div>
             </div>
         </div>

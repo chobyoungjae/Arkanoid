@@ -138,6 +138,87 @@ body {
     justify-content: flex-start;
 }
 
+/* 상태바 (HP + MP) */
+.status-bars {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 10px;
+    gap: 20px;
+}
+
+.player-status {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-status.player2 {
+    flex-direction: row-reverse;
+}
+
+.player-label {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.player-status.player1 .player-label {
+    color: #4ecdc4;
+}
+
+.player-status.player2 .player-label {
+    color: #ff6b6b;
+}
+
+.bars-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-container {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.bar-container.health-bar {
+    height: 20px;
+}
+
+.bar-container.mp-bar {
+    height: 12px;
+}
+
+.bar-fill {
+    height: 100%;
+    width: 100%;
+    transition: width 0.3s ease;
+    border-radius: 6px;
+}
+
+.health-fill {
+    background: linear-gradient(90deg, #4ecdc4, #44a08d);
+}
+
+.player-status.player2 .health-fill {
+    background: linear-gradient(90deg, #ff6b6b, #e94560);
+}
+
+.mp-fill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.player-status.player2 .mp-fill {
+    background: linear-gradient(90deg, #f093fb, #f5576c);
+}
+
+/* 레거시 호환 */
 .health-bars {
     display: flex;
     justify-content: space-between;
@@ -158,20 +239,7 @@ body {
     flex-direction: row-reverse;
 }
 
-.player-label {
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.health-container.player1 .player-label {
-    color: #4ecdc4;
-}
-
-.health-container.player2 .player-label {
-    color: #ff6b6b;
-}
-
-.health-bar {
+.health-bar-old {
     flex: 1;
     height: 25px;
     background: rgba(255, 255, 255, 0.2);

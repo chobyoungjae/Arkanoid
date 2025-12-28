@@ -11,17 +11,22 @@ const GROUND_Y = 350;
 const PLAYER_WIDTH = 40;
 const PLAYER_HEIGHT = 80;
 const MAX_HEALTH = 100;
+const MAX_MP = 100;
+const MP_REGEN = 0.3; // 프레임당 MP 회복량
+const SKILL_MP_COST = 50; // 스킬 사용 시 MP 소모
 const GRAVITY = 0.8;
 const JUMP_FORCE = -15;
 const MOVE_SPEED = 5;
-const SKILL_COOLDOWN = 3000; // 3초
 
 // 공격 데미지
 const DAMAGE = {
     punch: 8,
     kick: 12,
-    skill: 25
+    skill: 30
 };
+
+// 장풍 (투사체) 배열
+let projectiles = [];
 
 // 게임 상태
 let gameState = {
@@ -31,6 +36,73 @@ let gameState = {
     gameRunning: false,
     subscription: null
 };
+
+// 장풍 클래스
+class Projectile {
+    constructor(x, y, facingRight, owner) {
+        this.x = x;
+        this.y = y;
+        this.width = 30;
+        this.height = 20;
+        this.speed = 10;
+        this.facingRight = facingRight;
+        this.owner = owner; // 'player1' or 'player2'
+        this.active = true;
+        this.frame = 0;
+    }
+
+    update() {
+        this.x += this.facingRight ? this.speed : -this.speed;
+        this.frame++;
+
+        // 화면 밖으로 나가면 비활성화
+        if (this.x < -50 || this.x > CANVAS_WIDTH + 50) {
+            this.active = false;
+        }
+    }
+
+    draw(ctx) {
+        if (!this.active) return;
+
+        // 번개 이펙트
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+
+        // 번개 색상
+        const gradient = ctx.createLinearGradient(-15, 0, 15, 0);
+        gradient.addColorStop(0, '#667eea');
+        gradient.addColorStop(0.5, '#fff');
+        gradient.addColorStop(1, '#764ba2');
+
+        ctx.fillStyle = gradient;
+        ctx.shadowColor = '#667eea';
+        ctx.shadowBlur = 15;
+
+        // 번개 모양
+        ctx.beginPath();
+        if (this.facingRight) {
+            ctx.moveTo(-15, -8);
+            ctx.lineTo(0, -8);
+            ctx.lineTo(-5, 0);
+            ctx.lineTo(15, 0);
+            ctx.lineTo(-5, 8);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(-15, 0);
+        } else {
+            ctx.moveTo(15, -8);
+            ctx.lineTo(0, -8);
+            ctx.lineTo(5, 0);
+            ctx.lineTo(-15, 0);
+            ctx.lineTo(5, 8);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(15, 0);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
 
 // 플레이어 클래스
 class Fighter {
@@ -42,13 +114,13 @@ class Fighter {
         this.width = PLAYER_WIDTH;
         this.height = PLAYER_HEIGHT;
         this.health = MAX_HEALTH;
+        this.mp = MAX_MP; // MP 추가
         this.isPlayer1 = isPlayer1;
         this.facingRight = isPlayer1;
         this.isJumping = false;
         this.isAttacking = false;
         this.attackType = null;
         this.attackFrame = 0;
-        this.skillCooldown = 0;
         this.hitCooldown = 0;
     }
 
@@ -92,8 +164,12 @@ class Fighter {
             }
         }
 
+        // MP 자동 회복
+        if (this.mp < MAX_MP) {
+            this.mp = Math.min(MAX_MP, this.mp + MP_REGEN);
+        }
+
         // 쿨다운
-        if (this.skillCooldown > 0) this.skillCooldown -= 16;
         if (this.hitCooldown > 0) this.hitCooldown -= 16;
 
         // 상대방 바라보기
@@ -104,14 +180,16 @@ class Fighter {
 
     attack(type) {
         if (this.isAttacking) return false;
-        if (type === 'skill' && this.skillCooldown > 0) return false;
+
+        // 스킬은 MP가 충분해야 사용 가능
+        if (type === 'skill' && this.mp < SKILL_MP_COST) return false;
 
         this.isAttacking = true;
         this.attackType = type;
         this.attackFrame = 0;
 
         if (type === 'skill') {
-            this.skillCooldown = SKILL_COOLDOWN;
+            this.mp -= SKILL_MP_COST; // MP 소모
         }
 
         return true;
@@ -258,6 +336,14 @@ class Fighter {
         }
     }
 
+    // 장풍 발사
+    fireProjectile() {
+        const projectileX = this.facingRight ? this.x + this.width : this.x - 30;
+        const projectileY = this.y + 30;
+        const owner = this.isPlayer1 ? 'player1' : 'player2';
+        projectiles.push(new Projectile(projectileX, projectileY, this.facingRight, owner));
+    }
+
     toJSON() {
         return {
             x: this.x,
@@ -265,6 +351,7 @@ class Fighter {
             vx: this.vx,
             vy: this.vy,
             health: this.health,
+            mp: this.mp,
             isJumping: this.isJumping,
             isAttacking: this.isAttacking,
             attackType: this.attackType,
@@ -280,6 +367,7 @@ class Fighter {
         this.vx = data.vx;
         this.vy = data.vy;
         this.health = data.health;
+        if (data.mp !== undefined) this.mp = data.mp;
         this.isJumping = data.isJumping;
         this.isAttacking = data.isAttacking;
         this.attackType = data.attackType;
@@ -610,8 +698,40 @@ function update() {
         }
     }
 
-    // 체력바 업데이트 (상대방 HP는 서버에서 받음)
-    updateHealthBars();
+    // 내가 스킬 사용 시 장풍 발사 (attackFrame이 5일 때)
+    if (myPlayer.isAttacking && myPlayer.attackType === 'skill' && myPlayer.attackFrame === 5) {
+        myPlayer.fireProjectile();
+    }
+
+    // 장풍 업데이트
+    projectiles.forEach(p => p.update());
+
+    // 장풍에 내가 맞았는지 체크
+    projectiles.forEach(p => {
+        if (!p.active) return;
+        // 상대방이 쏜 장풍만 체크
+        if (p.owner !== gameState.playerId) {
+            if (checkCollision(
+                { x: p.x, y: p.y, width: p.width, height: p.height },
+                { x: myPlayer.x, y: myPlayer.y, width: myPlayer.width, height: myPlayer.height }
+            )) {
+                if (myPlayer.takeDamage(DAMAGE.skill)) {
+                    p.active = false;
+                    updateStatusBars();
+                    if (myPlayer.health <= 0) {
+                        const winner = gameState.playerId === 'player1' ? 'player2' : 'player1';
+                        declareWinner(winner);
+                    }
+                }
+            }
+        }
+    });
+
+    // 비활성화된 장풍 제거
+    projectiles = projectiles.filter(p => p.active);
+
+    // 상태바 업데이트 (상대방 HP/MP는 서버에서 받음)
+    updateStatusBars();
 
     // 상대방 HP가 0이면 내가 승리 (서버에서 받은 HP 체크)
     if (opponentPlayer.health <= 0 && gameState.gameRunning) {
@@ -627,10 +747,17 @@ function checkCollision(a, b) {
            a.y + a.height > b.y;
 }
 
-// 체력바 업데이트
-function updateHealthBars() {
+// 상태바 업데이트 (HP + MP)
+function updateStatusBars() {
     document.getElementById('health-p1').style.width = `${player1.health}%`;
     document.getElementById('health-p2').style.width = `${player2.health}%`;
+    document.getElementById('mp-p1').style.width = `${player1.mp}%`;
+    document.getElementById('mp-p2').style.width = `${player2.mp}%`;
+}
+
+// 레거시 호환
+function updateHealthBars() {
+    updateStatusBars();
 }
 
 // 그리기
@@ -650,6 +777,9 @@ function draw() {
     ctx.moveTo(0, GROUND_Y);
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y);
     ctx.stroke();
+
+    // 장풍 그리기
+    projectiles.forEach(p => p.draw(ctx));
 
     // 플레이어 그리기
     player1.draw(ctx);

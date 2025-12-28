@@ -371,7 +371,7 @@ async function joinRoom() {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('game_rooms')
             .select('*')
             .eq('id', roomId)

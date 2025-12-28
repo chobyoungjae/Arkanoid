@@ -567,29 +567,7 @@ function gameLoop() {
 function update() {
     myPlayer.update(keys, opponentPlayer);
 
-    // 공격 히트 체크
-    const hitbox = myPlayer.getAttackHitbox();
-    if (hitbox) {
-        if (checkCollision(hitbox, {
-            x: opponentPlayer.x,
-            y: opponentPlayer.y,
-            width: opponentPlayer.width,
-            height: opponentPlayer.height
-        })) {
-            const damage = DAMAGE[myPlayer.attackType] || 10;
-            if (opponentPlayer.takeDamage(damage)) {
-                // 데미지 적용됨
-                updateHealthBars();
-
-                // 승리 체크
-                if (opponentPlayer.health <= 0) {
-                    declareWinner(gameState.playerId);
-                }
-            }
-        }
-    }
-
-    // 상대방 공격 체크
+    // 상대방 공격에 내가 맞았는지 체크 (내 HP는 내가 계산)
     const oppHitbox = opponentPlayer.getAttackHitbox();
     if (oppHitbox) {
         if (checkCollision(oppHitbox, {
@@ -602,6 +580,7 @@ function update() {
             if (myPlayer.takeDamage(damage)) {
                 updateHealthBars();
 
+                // 내가 죽으면 상대방 승리
                 if (myPlayer.health <= 0) {
                     const winner = gameState.playerId === 'player1' ? 'player2' : 'player1';
                     declareWinner(winner);
@@ -609,6 +588,9 @@ function update() {
             }
         }
     }
+
+    // 체력바 업데이트 (상대방 HP는 서버에서 받음)
+    updateHealthBars();
 }
 
 // 충돌 체크

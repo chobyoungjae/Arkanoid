@@ -449,7 +449,7 @@ function subscribeToGame() {
         gameState.subscription.unsubscribe();
     }
 
-    gameState.subscription = supabase
+    gameState.subscription = supabaseClient
         .channel(`game-${gameState.roomId}`)
         .on('postgres_changes', {
             event: 'UPDATE',

@@ -611,6 +611,11 @@ function update() {
 
     // 체력바 업데이트 (상대방 HP는 서버에서 받음)
     updateHealthBars();
+
+    // 상대방 HP가 0이면 내가 승리 (서버에서 받은 HP 체크)
+    if (opponentPlayer.health <= 0 && gameState.gameRunning) {
+        declareWinner(gameState.playerId);
+    }
 }
 
 // 충돌 체크
@@ -682,6 +687,9 @@ async function declareWinner(winner) {
 
 // 게임 종료
 function endGame(winner) {
+    // 이미 결과 화면이면 무시
+    if (screens.result.classList.contains('active')) return;
+
     gameState.gameRunning = false;
 
     const resultText = document.getElementById('result-text');

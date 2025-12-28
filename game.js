@@ -2,7 +2,7 @@
 const SUPABASE_URL = 'https://lfjijdmlxreqcameyvhk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmamlqZG1seHJlcWNhbWV5dmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4OTkyNjgsImV4cCI6MjA4MjQ3NTI2OH0.WyRgQVQM6H3iY8jO3a-sR_BQHvmuctaTLBceE5BTU64';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 게임 상수
 const CANVAS_WIDTH = 600;
@@ -331,7 +331,7 @@ async function createRoom() {
     showScreen('create');
 
     try {
-        await supabase.from('game_rooms').insert({
+        await supabaseClient.from('game_rooms').insert({
             id: roomId,
             player1: { ready: true },
             player2: null,
@@ -339,7 +339,7 @@ async function createRoom() {
         });
 
         // 상대방 입장 대기
-        gameState.subscription = supabase
+        gameState.subscription = supabaseClient
             .channel(`room-${roomId}`)
             .on('postgres_changes', {
                 event: 'UPDATE',
@@ -391,7 +391,7 @@ async function joinRoom() {
         gameState.playerId = 'player2';
         gameState.isHost = false;
 
-        await supabase.from('game_rooms').update({
+        await supabaseClient.from('game_rooms').update({
             player2: { ready: true }
         }).eq('id', roomId);
 
@@ -656,7 +656,7 @@ async function syncToServer() {
     updateData[gameState.playerId] = myPlayer.toJSON();
 
     try {
-        await supabase.from('game_rooms').update(updateData).eq('id', gameState.roomId);
+        await supabaseClient.from('game_rooms').update(updateData).eq('id', gameState.roomId);
     } catch (error) {
         console.error('동기화 실패:', error);
     }
@@ -667,7 +667,7 @@ async function declareWinner(winner) {
     gameState.gameRunning = false;
 
     try {
-        await supabase.from('game_rooms').update({
+        await supabaseClient.from('game_rooms').update({
             status: 'finished',
             winner: winner
         }).eq('id', gameState.roomId);
@@ -697,7 +697,7 @@ function endGame(winner) {
 // 재경기
 async function rematch() {
     if (gameState.isHost) {
-        await supabase.from('game_rooms').update({
+        await supabaseClient.from('game_rooms').update({
             player1: { ready: true },
             player2: { ready: true },
             status: 'waiting',
@@ -716,7 +716,7 @@ async function backToMenu() {
 
     if (gameState.roomId) {
         try {
-            await supabase.from('game_rooms').delete().eq('id', gameState.roomId);
+            await supabaseClient.from('game_rooms').delete().eq('id', gameState.roomId);
         } catch (error) {
             console.error('방 삭제 실패:', error);
         }

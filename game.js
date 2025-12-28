@@ -567,6 +567,26 @@ function gameLoop() {
 function update() {
     myPlayer.update(keys, opponentPlayer);
 
+    // 플레이어 충돌 체크 (겹치지 않게)
+    const overlap = checkCollision(
+        { x: myPlayer.x, y: myPlayer.y, width: myPlayer.width, height: myPlayer.height },
+        { x: opponentPlayer.x, y: opponentPlayer.y, width: opponentPlayer.width, height: opponentPlayer.height }
+    );
+
+    if (overlap) {
+        // 겹치면 밀어내기
+        const myCenter = myPlayer.x + myPlayer.width / 2;
+        const oppCenter = opponentPlayer.x + opponentPlayer.width / 2;
+
+        if (myCenter < oppCenter) {
+            // 내가 왼쪽에 있으면 왼쪽으로 밀림
+            myPlayer.x = Math.max(0, opponentPlayer.x - myPlayer.width - 2);
+        } else {
+            // 내가 오른쪽에 있으면 오른쪽으로 밀림
+            myPlayer.x = Math.min(CANVAS_WIDTH - myPlayer.width, opponentPlayer.x + opponentPlayer.width + 2);
+        }
+    }
+
     // 상대방 공격에 내가 맞았는지 체크 (내 HP는 내가 계산)
     const oppHitbox = opponentPlayer.getAttackHitbox();
     if (oppHitbox) {

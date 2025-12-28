@@ -703,6 +703,18 @@ function update() {
         myPlayer.fireProjectile();
     }
 
+    // 상대방이 스킬 사용 시 장풍 발사 (상대방 화면에서 온 데이터 기반)
+    if (opponentPlayer.isAttacking && opponentPlayer.attackType === 'skill' && opponentPlayer.attackFrame === 5) {
+        // 이미 같은 장풍이 있는지 체크 (중복 방지)
+        const oppOwner = opponentPlayer.isPlayer1 ? 'player1' : 'player2';
+        const recentOppProjectile = projectiles.find(p =>
+            p.owner === oppOwner && p.frame < 10
+        );
+        if (!recentOppProjectile) {
+            opponentPlayer.fireProjectile();
+        }
+    }
+
     // 장풍 업데이트
     projectiles.forEach(p => p.update());
 

@@ -467,7 +467,8 @@ function subscribeToGame() {
             }
 
             // 게임 종료 체크
-            if (data.status === 'finished') {
+            if (data.status === 'finished' && data.winner) {
+                console.log('게임 종료 수신:', data.winner);
                 endGame(data.winner);
             }
         })
@@ -671,13 +672,17 @@ async function syncToServer() {
 
 // 승자 선언
 async function declareWinner(winner) {
+    if (!gameState.gameRunning) return; // 이미 끝났으면 무시
     gameState.gameRunning = false;
 
+    console.log('승자 선언:', winner);
+
     try {
-        await supabaseClient.from('game_rooms').update({
+        const result = await supabaseClient.from('game_rooms').update({
             status: 'finished',
             winner: winner
         }).eq('id', gameState.roomId);
+        console.log('서버 업데이트 결과:', result);
     } catch (error) {
         console.error('결과 저장 실패:', error);
     }
